@@ -1,5 +1,6 @@
 from kivy.core.window import Window
 import random
+import requests
 import json
 import math
 from kivy.uix.textinput import TextInput
@@ -3638,8 +3639,8 @@ class MathsQuizApp(App):
 
         elif topic == "Number Theory and Divisibility":
             number = random.choice([12, 18, 24, 36, 48])
-            self.correct_answer = 3
-            self.question.text = f"How many positive factors does {number} have? Enter 3 if it has six factors."
+            self.correct_answer = sum(1 for x in range(1, number + 1) if number % x == 0)
+            self.question.text = f"How many positive factors does {number} have?"
 
         elif topic == "Mathematical Word Problems":
             price = random.randint(10, 50)
@@ -3970,29 +3971,29 @@ class MathsQuizApp(App):
         
     def show_leaderboard(self, instance=None):
         self.page_layout.clear_widgets()
-
+    
         page = BoxLayout(
             orientation="vertical",
             spacing=10,
             padding=20
         )
-
+    
         scroll = ScrollView(
             do_scroll_x=False,
             do_scroll_y=True
         )
-
+    
         layout = BoxLayout(
             orientation="vertical",
             size_hint_y=None,
             spacing=10,
             padding=20
         )
-
+    
         layout.bind(
             minimum_height=layout.setter("height")
         )
-
+    
         try:
             with open("leaderboard.json", "r") as file:
                 leaderboard = json.load(file)
@@ -4002,12 +4003,26 @@ class MathsQuizApp(App):
 
         except (FileNotFoundError, json.JSONDecodeError):
             leaderboard = []
-
+    
         valid_students = [
             student
             for student in leaderboard
             if isinstance(student, dict)
         ]
+    
+        your_username = getattr(self, "student_name", "")
+    
+        filtered_students = []
+    
+        for student in valid_students:
+            other_username = str(student.get("name", ""))
+    
+            if your_username and other_username.casefold() == your_username.casefold():
+                continue
+    
+            filtered_students.append(student)
+    
+        valid_students = filtered_students
 
         def get_score(student):
             try:
@@ -4019,7 +4034,7 @@ class MathsQuizApp(App):
             key=get_score,
             reverse=True
         )
-
+    
         if not valid_students:
             layout.add_widget(
                 Label(
@@ -4029,13 +4044,12 @@ class MathsQuizApp(App):
                     height=50
                 )
             )
-
         else:
             for rank, student in enumerate(valid_students, start=1):
                 name = student.get("name", "Unknown")
                 student_class = student.get("class", "N/A")
                 score = get_score(student)
-
+    
                 layout.add_widget(
                     Label(
                         text=(
@@ -4048,21 +4062,21 @@ class MathsQuizApp(App):
                         font_size=18
                     )
                 )
-
+    
         scroll.add_widget(layout)
-
+    
         back = Button(
             text="Go Back to Home",
             font_size=18,
             size_hint_y=None,
             height=55
         )
-
+    
         back.bind(on_press=self.home)
-
+    
         page.add_widget(scroll)
         page.add_widget(back)
-
+    
         self.page_layout.add_widget(page)
     
 MathsQuizApp().run()
