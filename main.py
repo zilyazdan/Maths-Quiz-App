@@ -1,8 +1,4 @@
 from kivy.core.window import Window
-
-Window.fullscreen = True
-Window.clearcolor = (0, 0, 0, 1)
-
 import random
 import json
 import math
@@ -79,11 +75,6 @@ class MathsQuizApp(App):
             self.home_page()
             return True
 
-        if key in (120, 88):
-            self.stop_timer()
-            self.stop()
-            return True
-
         if key in (13, 271):
             if hasattr(self, "answer") and self.answer.focus:
                 self.enter_pressed(self.answer)
@@ -142,20 +133,12 @@ class MathsQuizApp(App):
             size_hint_y=None,
             height=50
         )
-        
-        text = Label(
-            text = "Press  'x'  key to leave the app.",
-            color = "red",
-            height = 50,
-            font_size = 20
-        )
 
         layout.add_widget(title)
         layout.add_widget(Lessons)
         layout.add_widget(Mt_quiz)
         layout.add_widget(Leaderboard)
         layout.add_widget(QS)
-        layout.add_widget(text)
 
         Leaderboard.bind(on_press=self.show_leaderboard)
         Lessons.bind(on_press=self.Lesson)
